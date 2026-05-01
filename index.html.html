@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --gold:#C9A84C;--gold-light:#F0D080;--gold-dark:#8B6914;
+    --ink:#1A1208;--ink2:#3D2E10;--ink3:#6B5130;
+    --parchment:#FDF8EE;--parchment2:#F5EDD4;--parchment3:#EDE0B8;
+    --red:#8B2222;--green:#1A4A1A;--blue:#1A2E5A;
+  }
+  body{font-family:'DM Sans',sans-serif;background:var(--parchment);color:var(--ink);min-height:100vh;overflow-x:hidden;}
+
+  /* TOP BAR */
+  .topbar{background:var(--ink);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--gold);}
+  .app-logo{font-family:'Playfair Display',serif;font-size:22px;color:var(--gold);letter-spacing:1px;}
+  .app-logo span{font-style:italic;color:var(--gold-light);}
+  .app-date{font-size:12px;color:#aaa;letter-spacing:0.5px;}
+
+  /* NAV */
+  .nav{background:var(--ink2);display:flex;gap:2px;padding:0 12px;border-bottom:1px solid var(--gold-dark);}
+  .nav-btn{font-family:'DM Sans',sans-serif;font-size:13px;color:#ccc;background:none;border:none;padding:10px 18px;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;letter-spacing:0.3px;}
+  .nav-btn:hover{color:var(--gold-light);}
+  .nav-btn.active{color:var(--gold);border-bottom:2px solid var(--gold);}
+
+  /* MAIN */
+  .main{max-width:900px;margin:0 auto;padding:24px 20px;}
+  .screen{display:none;} .screen.active{display:block;}
+
+  /* DASHBOARD */
+  .dash-greeting{font-family:'Playfair Display',serif;font-size:26px;color:var(--ink);margin-bottom:4px;}
+  .dash-greeting em{color:var(--gold-dark);font-style:italic;}
+  .dash-sub{font-size:14px;color:var(--ink3);margin-bottom:20px;}
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+  .stat-card{background:var(--ink);border-radius:8px;padding:16px;text-align:center;border:1px solid var(--gold-dark);}
+  .stat-num{font-family:'Playfair Display',serif;font-size:28px;color:var(--gold);display:block;}
+  .stat-label{font-size:11px;color:#aaa;letter-spacing:0.5px;text-transform:uppercase;margin-top:2px;}
+  .quote-box{background:var(--parchment2);border-left:3px solid var(--gold);padding:14px 18px;border-radius:4px;margin-bottom:20px;}
+  .quote-text{font-family:'Playfair Display',serif;font-style:italic;font-size:15px;color:var(--ink2);}
+  .quote-author{font-size:12px;color:var(--ink3);margin-top:4px;}
+  .recent-section{margin-bottom:20px;}
+  .section-title{font-family:'Playfair Display',serif;font-size:16px;color:var(--ink);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--parchment3);}
+  .recent-item{background:var(--parchment2);border-radius:6px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;border:1px solid var(--parchment3);}
+  .recent-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);margin-top:5px;flex-shrink:0;}
+  .recent-title{font-size:13px;font-weight:500;color:var(--ink);}
+  .recent-meta{font-size:11px;color:var(--ink3);margin-top:2px;}
+
+  /* REMINDER BELL */
+  .alarm-badge{display:inline-block;background:var(--red);color:#fff;font-size:10px;border-radius:10px;padding:1px 6px;margin-left:6px;}
+
+  /* TODO */
+  .todo-form{background:var(--parchment2);border:1px solid var(--parchment3);border-radius:8px;padding:16px;margin-bottom:20px;}
+  .form-row{display:flex;gap:10px;margin-bottom:10px;}
+  .input-field{flex:1;background:var(--parchment);border:1px solid var(--parchment3);border-radius:6px;padding:8px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);outline:none;}
+  .input-field:focus{border-color:var(--gold);}
+  .select-field{background:var(--parchment);border:1px solid var(--parchment3);border-radius:6px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);outline:none;cursor:pointer;}
+  .btn-gold{background:var(--gold);color:var(--ink);border:none;border-radius:6px;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:background 0.2s;}
+  .btn-gold:hover{background:var(--gold-light);}
+  .btn-outline{background:none;border:1px solid var(--parchment3);border-radius:6px;padding:6px 12px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink3);cursor:pointer;}
+  .btn-outline:hover{border-color:var(--gold);color:var(--gold-dark);}
+  .btn-danger{background:none;border:1px solid #ddd;border-radius:4px;padding:4px 8px;font-size:11px;color:#999;cursor:pointer;}
+  .btn-danger:hover{border-color:var(--red);color:var(--red);}
+
+  .filter-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+  .filter-chip{background:none;border:1px solid var(--parchment3);border-radius:16px;padding:4px 12px;font-size:12px;color:var(--ink3);cursor:pointer;transition:all 0.2s;}
+  .filter-chip.active, .filter-chip:hover{background:var(--gold);color:var(--ink);border-color:var(--gold);}
+
+  .todo-item{background:var(--parchment2);border:1px solid var(--parchment3);border-radius:8px;padding:12px 14px;margin-bottom:8px;transition:all 0.2s;}
+  .todo-item.done{opacity:0.6;}
+  .todo-header{display:flex;align-items:flex-start;gap:10px;}
+  .todo-check{width:18px;height:18px;border:2px solid var(--gold-dark);border-radius:4px;cursor:pointer;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;background:transparent;transition:all 0.2s;}
+  .todo-check.checked{background:var(--gold);border-color:var(--gold);}
+  .todo-check.checked::after{content:'✓';color:var(--ink);font-size:11px;font-weight:700;}
+  .todo-info{flex:1;}
+  .todo-title{font-size:14px;font-weight:500;color:var(--ink);}
+  .todo-item.done .todo-title{text-decoration:line-through;color:var(--ink3);}
+  .todo-meta{font-size:11px;color:var(--ink3);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap;}
+  .priority-badge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:500;}
+  .p-high{background:#f8e0e0;color:var(--red);}
+  .p-med{background:#fef3cd;color:#7a5a00;}
+  .p-low{background:#e0f0e0;color:var(--green);}
+  .todo-actions{display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--parchment3);}
+  .todo-experience{margin-top:8px;padding:8px 10px;background:var(--parchment);border-radius:6px;border-left:2px solid var(--gold);}
+  .todo-exp-label{font-size:10px;color:var(--gold-dark);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;}
+  .todo-exp-text{font-size:12px;color:var(--ink2);font-style:italic;}
+  .exp-input-row{display:flex;gap:8px;margin-top:8px;}
+  .exp-textarea{flex:1;background:var(--parchment);border:1px solid var(--parchment3);border-radius:6px;padding:6px 10px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);outline:none;resize:none;min-height:50px;}
+  .exp-textarea:focus{border-color:var(--gold);}
+  .todo-expanded{display:none;}
+  .todo-item.expanded .todo-expanded{display:block;}
+
+  /* DIARY */
+  .diary-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+  .diary-header h2{font-family:'Playfair Display',serif;font-size:20px;color:var(--ink);}
+  .diary-editor{background:var(--parchment2);border:1px solid var(--parchment3);border-radius:8px;padding:16px;margin-bottom:16px;}
+  .diary-entry-title{width:100%;background:transparent;border:none;border-bottom:1px solid var(--parchment3);padding:8px 0;font-family:'Playfair Display',serif;font-size:18px;color:var(--ink);outline:none;margin-bottom:10px;}
+  .diary-entry-title::placeholder{color:var(--ink3);font-style:italic;}
+  .diary-mood-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;}
+  .diary-mood-label{font-size:12px;color:var(--ink3);}
+  .mood-btn{background:none;border:1px solid var(--parchment3);border-radius:16px;padding:3px 10px;font-size:12px;cursor:pointer;transition:all 0.2s;}
+  .mood-btn.active{background:var(--gold);border-color:var(--gold);color:var(--ink);}
+  .diary-body{width:100%;min-height:180px;background:transparent;border:none;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);outline:none;resize:vertical;line-height:1.8;}
+  .diary-body::placeholder{color:var(--ink3);font-style:italic;}
+  .diary-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+  .diary-tag-input{flex:1;min-width:120px;background:var(--parchment);border:1px solid var(--parchment3);border-radius:6px;padding:6px 10px;font-size:12px;color:var(--ink);outline:none;}
+  .diary-tag-input:focus{border-color:var(--gold);}
+
+  .diary-entries{display:grid;gap:12px;}
+  .diary-card{background:var(--parchment2);border:1px solid var(--parchment3);border-radius:10px;padding:16px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
+  .diary-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold);}
+  .diary-card:hover{border-color:var(--gold-dark);transform:translateY(-1px);}
+  .diary-card-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+  .diary-card-title{font-family:'Playfair Display',serif;font-size:16px;color:var(--ink);}
+  .diary-card-date{font-size:11px;color:var(--ink3);text-align:right;}
+  .diary-card-mood{font-size:12px;color:var(--gold-dark);margin-bottom:4px;}
+  .diary-card-preview{font-size:13px;color:var(--ink3);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .diary-card-tags{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;}
+  .diary-tag{background:var(--parchment3);color:var(--ink3);padding:2px 8px;border-radius:10px;font-size:10px;}
+
+  .diary-full{display:none;background:var(--parchment2);border:1px solid var(--parchment3);border-radius:10px;padding:20px;}
+  .diary-full.visible{display:block;}
+  .diary-full-header{display:flex;justify-content:space-between;margin-bottom:12px;}
+  .diary-full-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--ink);}
+  .diary-full-body{font-size:14px;color:var(--ink2);line-height:1.9;white-space:pre-wrap;}
+
+  /* REMINDERS */
+  .reminder-form{background:var(--parchment2);border:1px solid var(--parchment3);border-radius:8px;padding:16px;margin-bottom:20px;}
+  .reminder-item{background:var(--parchment2);border:1px solid var(--parchment3);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start;}
+  .reminder-icon{width:36px;height:36px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;color:var(--gold);}
+  .reminder-info{flex:1;}
+  .reminder-title-text{font-size:14px;font-weight:500;color:var(--ink);}
+  .reminder-time{font-size:12px;color:var(--ink3);margin-top:2px;}
+  .reminder-item.fired{border-color:var(--green);background:#f0f8f0;}
+
+  /* MEMORIES */
+  .memory-search{width:100%;background:var(--parchment2);border:1px solid var(--parchment3);border-radius:8px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);outline:none;margin-bottom:16px;}
+  .memory-search:focus{border-color:var(--gold);}
+  .memory-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
+  .memory-card{background:var(--parchment2);border:1px solid var(--parchment3);border-radius:8px;overflow:hidden;cursor:pointer;transition:all 0.2s;}
+  .memory-card:hover{border-color:var(--gold);transform:translateY(-2px);}
+  .memory-img{width:100%;height:120px;object-fit:cover;background:var(--parchment3);display:flex;align-items:center;justify-content:center;font-size:30px;}
+  .memory-img-placeholder{width:100%;height:120px;background:linear-gradient(135deg,var(--parchment3),var(--parchment2));display:flex;align-items:center;justify-content:center;font-size:28px;}
+  .memory-body{padding:10px;}
+  .memory-title{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:3px;}
+  .memory-date{font-size:11px;color:var(--ink3);}
+  .memory-upload-box{border:2px dashed var(--parchment3);border-radius:8px;padding:24px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:16px;}
+  .memory-upload-box:hover{border-color:var(--gold);background:var(--parchment2);}
+  .upload-icon{font-size:28px;margin-bottom:8px;}
+  .upload-text{font-size:13px;color:var(--ink3);}
+
+  /* NOTIFICATION BANNER */
+  .notif-banner{position:fixed;top:16px;right:16px;background:var(--ink);color:var(--gold);border:1px solid var(--gold);border-radius:8px;padding:12px 16px;font-size:13px;z-index:999;max-width:280px;display:none;box-shadow:0 4px 20px rgba(0,0,0,0.3);}
+  .notif-banner.show{display:block;animation:slideIn 0.3s ease;}
+  @keyframes slideIn{from{transform:translateX(50px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+  .notif-title{font-weight:500;margin-bottom:3px;}
+  .notif-body{font-size:12px;color:#ccc;}
+
+  /* EMPTY STATE */
+  .empty-state{text-align:center;padding:40px 20px;color:var(--ink3);}
+  .empty-icon{font-size:36px;margin-bottom:10px;}
+  .empty-text{font-size:14px;}
+
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:500;}
+  .modal-overlay.open{display:flex;}
+  .modal-box{background:var(--parchment);border:1px solid var(--gold);border-radius:12px;padding:24px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;}
+  .modal-title{font-family:'Playfair Display',serif;font-size:18px;color:var(--ink);margin-bottom:14px;}
+  .modal-body{font-size:14px;color:var(--ink2);line-height:1.8;white-space:pre-wrap;}
+  .modal-close{float:right;background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink3);}
+
+  .progress-bar{height:4px;background:var(--parchment3);border-radius:2px;margin-top:6px;}
+  .progress-fill{height:100%;background:var(--gold);border-radius:2px;transition:width 0.5s;}
+
+  @media(max-width:600px){.stat-grid{grid-template-columns:repeat(2,1fr);}.form-row{flex-direction:column;}.memory-grid{grid-template-columns:1fr 1fr;}}
+</style>
+
+<div class="notif-banner" id="notifBanner">
+  <div class="notif-title" id="notifTitle">Reminder</div>
+  <div class="notif-body" id="notifBody"></div>
+</div>
+
+<div class="topbar">
+  <div class="app-logo">Audit <span>Your</span> Life</div>
+  <div class="app-date" id="topDate"></div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showScreen('dashboard')">Dashboard</button>
+  <button class="nav-btn" onclick="showScreen('todo')">To-Do List</button>
+  <button class="nav-btn" onclick="showScreen('diary')">My Diary</button>
+  <button class="nav-btn" onclick="showScreen('reminders')">Reminders <span class="alarm-badge" id="alarmCount">0</span></button>
+  <button class="nav-btn" onclick="showScreen('memories')">Memories</button>
+</div>
+
+<div class="main">
+
+  <!-- DASHBOARD -->
+  <div class="screen active" id="screen-dashboard">
+    <div class="dash-greeting">Good day, <em>Future CA</em> 👋</div>
+    <div class="dash-sub" id="dashSub">Your personal life audit command centre. Exam: May 2027.</div>
+    <div class="quote-box">
+      <div class="quote-text" id="dailyQuote">"Discipline is the bridge between goals and accomplishment."</div>
+      <div class="quote-author">— Jim Rohn</div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card"><span class="stat-num" id="s-tasks">0</span><span class="stat-label">Tasks Today</span></div>
+      <div class="stat-card"><span class="stat-num" id="s-done">0</span><span class="stat-label">Completed</span></div>
+      <div class="stat-card"><span class="stat-num" id="s-diary">0</span><span class="stat-label">Diary Entries</span></div>
+      <div class="stat-card"><span class="stat-num" id="s-days">0</span><span class="stat-label">Days to Exam</span></div>
+    </div>
+    <div class="recent-section">
+      <div class="section-title">Recent To-Do Items</div>
+      <div id="recentTodos"></div>
+    </div>
+    <div class="recent-section">
+      <div class="section-title">Recent Diary Entries</div>
+      <div id="recentDiary"></div>
+    </div>
+  </div>
+
+  <!-- TODO -->
+  <div class="screen" id="screen-todo">
+    <div class="todo-form">
+      <div class="form-row">
+        <input class="input-field" id="todoTitle" placeholder="Task title...">
+        <select class="select-field" id="todoPriority">
+          <option value="high">High Priority</option>
+          <option value="medium" selected>Medium</option>
+          <option value="low">Low Priority</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <input class="input-field" id="todoDue" type="date" placeholder="Due date">
+        <input class="input-field" id="todoSubject" placeholder="Subject / Topic (e.g. FR, SFM...)">
+        <button class="btn-gold" onclick="addTodo()">+ Add Task</button>
+      </div>
+    </div>
+    <div class="filter-row">
+      <button class="filter-chip active" onclick="filterTodos('all',this)">All</button>
+      <button class="filter-chip" onclick="filterTodos('pending',this)">Pending</button>
+      <button class="filter-chip" onclick="filterTodos('done',this)">Completed</button>
+      <button class="filter-chip" onclick="filterTodos('high',this)">High Priority</button>
+    </div>
+    <div id="todoList"></div>
+  </div>
+
+  <!-- DIARY -->
+  <div class="screen" id="screen-diary">
+    <div class="diary-header">
+      <h2>My Personal Diary</h2>
+      <button class="btn-gold" onclick="toggleDiaryEditor()">+ New Entry</button>
+    </div>
+    <div class="diary-editor" id="diaryEditor" style="display:none;">
+      <input class="diary-entry-title" id="diaryTitle" placeholder="Title of your entry...">
+      <div class="diary-mood-row">
+        <span class="diary-mood-label">Mood:</span>
+        <button class="mood-btn active" onclick="setMood(this,'Focused')">Focused</button>
+        <button class="mood-btn" onclick="setMood(this,'Motivated')">Motivated</button>
+        <button class="mood-btn" onclick="setMood(this,'Tired')">Tired</button>
+        <button class="mood-btn" onclick="setMood(this,'Anxious')">Anxious</button>
+        <button class="mood-btn" onclick="setMood(this,'Grateful')">Grateful</button>
+        <button class="mood-btn" onclick="setMood(this,'Distracted')">Distracted</button>
+      </div>
+      <textarea class="diary-body" id="diaryBody" placeholder="Pour your thoughts here. This is your safe space. Write about what happened today, what you learned, how you feel, what you want to improve..."></textarea>
+      <div class="diary-footer">
+        <input class="diary-tag-input" id="diaryTags" placeholder="Tags (comma separated: study, CA, personal...)">
+        <div style="display:flex;gap:8px;">
+          <button class="btn-outline" onclick="toggleDiaryEditor()">Cancel</button>
+          <button class="btn-gold" onclick="saveDiary()">Save Entry</button>
+        </div>
+      </div>
+    </div>
+    <input class="memory-search" id="diarySearch" placeholder="Search diary entries..." oninput="renderDiary()">
+    <div class="diary-full" id="diaryFull">
+      <div class="diary-full-header">
+        <div>
+          <div class="diary-full-title" id="dfTitle"></div>
+          <div style="font-size:12px;color:var(--ink3);margin-top:3px;" id="dfMeta"></div>
+        </div>
+        <button class="btn-outline" onclick="closeDiaryFull()">← Back</button>
+      </div>
+      <div class="diary-full-body" id="dfBody"></div>
+    </div>
+    <div class="diary-entries" id="diaryList"></div>
+  </div>
+
+  <!-- REMINDERS -->
+  <div class="screen" id="screen-reminders">
+    <div class="reminder-form">
+      <div class="form-row">
+        <input class="input-field" id="remTitle" placeholder="Reminder title (e.g. Study SFM Chapter 5)">
+      </div>
+      <div class="form-row">
+        <input class="input-field" id="remDate" type="date">
+        <input class="input-field" id="remTime" type="time">
+        <select class="select-field" id="remType">
+          <option value="study">Study Session</option>
+          <option value="break">Break / Rest</option>
+          <option value="revision">Revision</option>
+          <option value="personal">Personal</option>
+          <option value="exam">Exam Prep</option>
+        </select>
+        <button class="btn-gold" onclick="addReminder()">Set Alarm</button>
+      </div>
+    </div>
+    <div id="reminderList"></div>
+  </div>
+
+  <!-- MEMORIES -->
+  <div class="screen" id="screen-memories">
+    <div class="memory-upload-box" onclick="document.getElementById('memUpload').click()">
+      <div class="upload-icon">📷</div>
+      <div class="upload-text">Click to add a photo or video memory<br><span style="font-size:11px;color:var(--ink3);">Images and videos stored locally in your browser</span></div>
+      <input type="file" id="memUpload" style="display:none;" accept="image/*,video/*" onchange="addMemory(event)">
+    </div>
+    <input class="memory-search" id="memSearch" placeholder="Search memories by title or date..." oninput="renderMemories()">
+    <div class="memory-grid" id="memoryGrid"></div>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('modalOverlay').classList.remove('open')">✕</button>
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+const QUOTES = [
+  {q:'"Discipline is the bridge between goals and accomplishment."',a:'Jim Rohn'},
+  {q:'"The secret of getting ahead is getting started."',a:'Mark Twain'},
+  {q:'"Don\'t watch the clock; do what it does. Keep going."',a:'Sam Levenson'},
+  {q:'"It always seems impossible until it\'s done."',a:'Nelson Mandela'},
+  {q:'"Success is the sum of small efforts, repeated day in and day out."',a:'Robert Collier'},
+  {q:'"A CA\'s greatest asset is the discipline to study when no one is watching."',a:'— Your future self'},
+];
+const EXAM_DATE = new Date('2027-05-01');
+let currentMood = 'Focused';
+let todoFilter = 'all';
+let editingExpId = null;
+
+function getData(k,d){try{return JSON.parse(localStorage.getItem(k))||d;}catch{return d;}}
+function setData(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){console.log('Storage:',e);}}
+
+let todos = getData('ayl_todos',[]);
+let diaryEntries = getData('ayl_diary',[]);
+let reminders = getData('ayl_reminders',[]);
+let memories = getData('ayl_memories',[]);
+
+function formatDate(d){
+  if(!d) return '';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+}
+function today(){return new Date().toISOString().split('T')[0];}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  event.target.classList.add('active');
+  if(id==='dashboard') renderDashboard();
+  if(id==='todo') renderTodos();
+  if(id==='diary') renderDiary();
+  if(id==='reminders') renderReminders();
+  if(id==='memories') renderMemories();
+}
+
+function renderDashboard(){
+  const now = new Date();
+  document.getElementById('topDate').textContent = now.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const q = QUOTES[Math.floor(now.getDate())%QUOTES.length];
+  document.getElementById('dailyQuote').textContent = q.q;
+  document.querySelector('.quote-author').textContent = '— '+q.a;
+  const todayTasks = todos.filter(t=>t.date===today()||!t.date);
+  const doneTasks = todos.filter(t=>t.done);
+  document.getElementById('s-tasks').textContent = todos.length;
+  document.getElementById('s-done').textContent = doneTasks.length;
+  document.getElementById('s-diary').textContent = diaryEntries.length;
+  const diff = Math.ceil((EXAM_DATE-now)/(1000*60*60*24));
+  document.getElementById('s-days').textContent = diff>0?diff:'NOW';
+  const rt = document.getElementById('recentTodos');
+  const latest = [...todos].slice(-3).reverse();
+  rt.innerHTML = latest.length ? latest.map(t=>`<div class="recent-item"><div class="recent-dot"></div><div><div class="recent-title">${t.title}</div><div class="recent-meta">${t.subject||''} • ${t.done?'✓ Done':'Pending'}</div></div></div>`).join('') : '<div class="empty-state"><div class="empty-text">No tasks yet. Add your first task!</div></div>';
+  const rd = document.getElementById('recentDiary');
+  const latestD = [...diaryEntries].slice(-3).reverse();
+  rd.innerHTML = latestD.length ? latestD.map(d=>`<div class="recent-item"><div class="recent-dot"></div><div><div class="recent-title">${d.title}</div><div class="recent-meta">${formatDate(d.date)} • ${d.mood}</div></div></div>`).join('') : '<div class="empty-state"><div class="empty-text">No diary entries yet.</div></div>';
+}
+
+function addTodo(){
+  const title = document.getElementById('todoTitle').value.trim();
+  if(!title) return;
+  todos.push({id:Date.now(),title,priority:document.getElementById('todoPriority').value,date:document.getElementById('todoDue').value,subject:document.getElementById('todoSubject').value,done:false,experience:'',created:today()});
+  setData('ayl_todos',todos);
+  document.getElementById('todoTitle').value='';
+  document.getElementById('todoDue').value='';
+  document.getElementById('todoSubject').value='';
+  renderTodos();
+}
+
+function filterTodos(f,el){
+  todoFilter=f;
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderTodos();
+}
+
+function renderTodos(){
+  let list = [...todos];
+  if(todoFilter==='pending') list=list.filter(t=>!t.done);
+  else if(todoFilter==='done') list=list.filter(t=>t.done);
+  else if(todoFilter==='high') list=list.filter(t=>t.priority==='high');
+  list.sort((a,b)=>{const p={high:0,medium:1,low:2};return p[a.priority]-p[b.priority];});
+  const el = document.getElementById('todoList');
+  if(!list.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">No tasks here. Add one above!</div></div>';return;}
+  el.innerHTML = list.map(t=>{
+    const pb = t.priority==='high'?'p-high':t.priority==='low'?'p-low':'p-med';
+    const pl = t.priority==='high'?'High':t.priority==='low'?'Low':'Medium';
+    return `<div class="todo-item ${t.done?'done':''}" id="ti-${t.id}">
+      <div class="todo-header">
+        <div class="todo-check ${t.done?'checked':''}" onclick="toggleTodo(${t.id})"></div>
+        <div class="todo-info">
+          <div class="todo-title">${t.title}</div>
+          <div class="todo-meta">
+            <span class="priority-badge ${pb}">${pl}</span>
+            ${t.subject?`<span>${t.subject}</span>`:''}
+            ${t.date?`<span>Due: ${formatDate(t.date)}</span>`:''}
+          </div>
+        </div>
+        <button class="btn-danger" onclick="deleteTodo(${t.id})">✕</button>
+      </div>
+      ${t.experience?`<div class="todo-experience"><div class="todo-exp-label">My Experience & Notes</div><div class="todo-exp-text">${t.experience}</div></div>`:''}
+      <div class="todo-actions">
+        <button class="btn-outline" onclick="toggleExpInput(${t.id})">+ Add Experience/Notes</button>
+      </div>
+      <div class="todo-expanded" id="texp-${t.id}">
+        <div class="exp-input-row">
+          <textarea class="exp-textarea" id="exptext-${t.id}" placeholder="Write your experience, learnings, or notes for this task...">${t.experience||''}</textarea>
+          <button class="btn-gold" onclick="saveExp(${t.id})" style="align-self:flex-start;">Save</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  const done = todos.filter(t=>t.done).length;
+  const pct = todos.length?Math.round(done/todos.length*100):0;
+  document.getElementById('s-done').textContent = done;
+}
+
+function toggleTodo(id){
+  todos = todos.map(t=>t.id===id?{...t,done:!t.done}:t);
+  setData('ayl_todos',todos);
+  renderTodos();
+}
+
+function deleteTodo(id){
+  todos = todos.filter(t=>t.id!==id);
+  setData('ayl_todos',todos);
+  renderTodos();
+}
+
+function toggleExpInput(id){
+  const el = document.getElementById('texp-'+id);
+  el.style.display = el.style.display==='block'?'none':'block';
+}
+
+function saveExp(id){
+  const val = document.getElementById('exptext-'+id).value.trim();
+  todos = todos.map(t=>t.id===id?{...t,experience:val}:t);
+  setData('ayl_todos',todos);
+  renderTodos();
+}
+
+function setMood(el,mood){
+  currentMood=mood;
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function toggleDiaryEditor(){
+  const ed = document.getElementById('diaryEditor');
+  ed.style.display = ed.style.display==='none'?'block':'none';
+  if(ed.style.display==='block'){document.getElementById('diaryTitle').focus();}
+}
+
+function saveDiary(){
+  const title = document.getElementById('diaryTitle').value.trim();
+  const body = document.getElementById('diaryBody').value.trim();
+  if(!title||!body) return;
+  diaryEntries.push({id:Date.now(),title,body,mood:currentMood,tags:document.getElementById('diaryTags').value.split(',').map(s=>s.trim()).filter(Boolean),date:today()});
+  setData('ayl_diary',diaryEntries);
+  document.getElementById('diaryTitle').value='';
+  document.getElementById('diaryBody').value='';
+  document.getElementById('diaryTags').value='';
+  toggleDiaryEditor();
+  renderDiary();
+}
+
+function renderDiary(){
+  const q = (document.getElementById('diarySearch')||{}).value||'';
+  let list = [...diaryEntries].filter(d=> !q || d.title.toLowerCase().includes(q.toLowerCase()) || d.body.toLowerCase().includes(q.toLowerCase()) || (d.tags||[]).some(t=>t.toLowerCase().includes(q.toLowerCase())));
+  list = list.reverse();
+  const el = document.getElementById('diaryList');
+  document.getElementById('diaryFull').classList.remove('visible');
+  if(!list.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📔</div><div class="empty-text">Your diary awaits. Click "+ New Entry" to begin.</div></div>';return;}
+  el.innerHTML = list.map(d=>`
+    <div class="diary-card" onclick="openDiary(${d.id})">
+      <div class="diary-card::before"></div>
+      <div class="diary-card-head">
+        <div class="diary-card-title">${d.title}</div>
+        <div class="diary-card-date">${formatDate(d.date)}</div>
+      </div>
+      <div class="diary-card-mood">${d.mood}</div>
+      <div class="diary-card-preview">${d.body}</div>
+      ${d.tags&&d.tags.length?`<div class="diary-card-tags">${d.tags.map(t=>`<span class="diary-tag">${t}</span>`).join('')}</div>`:''}
+    </div>
+  `).join('');
+  document.getElementById('s-diary').textContent = diaryEntries.length;
+}
+
+function openDiary(id){
+  const d = diaryEntries.find(e=>e.id===id);
+  if(!d) return;
+  document.getElementById('dfTitle').textContent = d.title;
+  document.getElementById('dfMeta').textContent = `${formatDate(d.date)} • ${d.mood}${d.tags&&d.tags.length?' • '+d.tags.join(', '):''}`;
+  document.getElementById('dfBody').textContent = d.body;
+  document.getElementById('diaryFull').classList.add('visible');
+  document.getElementById('diaryList').innerHTML = '';
+  document.getElementById('diaryFull').scrollIntoView({behavior:'smooth'});
+}
+
+function closeDiaryFull(){
+  document.getElementById('diaryFull').classList.remove('visible');
+  renderDiary();
+}
+
+function addReminder(){
+  const title = document.getElementById('remTitle').value.trim();
+  const date = document.getElementById('remDate').value;
+  const time = document.getElementById('remTime').value;
+  if(!title||!date||!time) return;
+  reminders.push({id:Date.now(),title,date,time,type:document.getElementById('remType').value,fired:false});
+  setData('ayl_reminders',reminders);
+  document.getElementById('remTitle').value='';
+  document.getElementById('remDate').value='';
+  document.getElementById('remTime').value='';
+  renderReminders();
+  updateAlarmBadge();
+}
+
+function renderReminders(){
+  const el = document.getElementById('reminderList');
+  const list = [...reminders].sort((a,b)=>new Date(a.date+'T'+a.time)-new Date(b.date+'T'+b.time));
+  if(!list.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">⏰</div><div class="empty-text">No reminders set. Set one above!</div></div>';return;}
+  const icons = {study:'📚',break:'☕',revision:'📝',personal:'🌟',exam:'🎯'};
+  el.innerHTML = list.map(r=>`
+    <div class="reminder-item ${r.fired?'fired':''}">
+      <div class="reminder-icon">${icons[r.type]||'⏰'}</div>
+      <div class="reminder-info">
+        <div class="reminder-title-text">${r.title}</div>
+        <div class="reminder-time">${formatDate(r.date)} at ${r.time} • ${r.type}</div>
+        ${r.fired?'<div style="font-size:11px;color:var(--green);margin-top:3px;">✓ Reminded</div>':''}
+      </div>
+      <button class="btn-danger" onclick="deleteReminder(${r.id})">✕</button>
+    </div>
+  `).join('');
+}
+
+function deleteReminder(id){
+  reminders = reminders.filter(r=>r.id!==id);
+  setData('ayl_reminders',reminders);
+  renderReminders();
+  updateAlarmBadge();
+}
+
+function updateAlarmBadge(){
+  const active = reminders.filter(r=>!r.fired).length;
+  document.getElementById('alarmCount').textContent = active;
+}
+
+function checkReminders(){
+  const now = new Date();
+  let changed = false;
+  reminders = reminders.map(r=>{
+    if(!r.fired){
+      const rt = new Date(r.date+'T'+r.time);
+      if(rt<=now){
+        showNotification(r.title,'Time for: '+r.type);
+        changed=true;
+        return {...r,fired:true};
+      }
+    }
+    return r;
+  });
+  if(changed){setData('ayl_reminders',reminders);renderReminders();updateAlarmBadge();}
+}
+
+function showNotification(title,body){
+  const b = document.getElementById('notifBanner');
+  document.getElementById('notifTitle').textContent = title;
+  document.getElementById('notifBody').textContent = body;
+  b.classList.add('show');
+  setTimeout(()=>b.classList.remove('show'),5000);
+  if('Notification' in window && Notification.permission==='granted'){
+    new Notification(title,{body});
+  }
+}
+
+function addMemory(ev){
+  const file = ev.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const title = prompt('Name this memory:',file.name.replace(/\.[^/.]+$/,''))||file.name;
+    memories.push({id:Date.now(),title,data:e.target.result,type:file.type,date:today()});
+    setData('ayl_memories',memories);
+    renderMemories();
+  };
+  reader.readAsDataURL(file);
+  ev.target.value='';
+}
+
+function renderMemories(){
+  const q = (document.getElementById('memSearch')||{}).value||'';
+  let list = [...memories].filter(m=>!q||m.title.toLowerCase().includes(q.toLowerCase())).reverse();
+  const el = document.getElementById('memoryGrid');
+  if(!list.length){el.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🖼️</div><div class="empty-text">No memories yet. Upload your first photo or video!</div></div>';return;}
+  el.innerHTML = list.map(m=>`
+    <div class="memory-card" onclick="openMemory(${m.id})">
+      ${m.type&&m.type.startsWith('image')?
+        `<img src="${m.data}" style="width:100%;height:120px;object-fit:cover;">`:
+        `<div class="memory-img-placeholder">🎬</div>`
+      }
+      <div class="memory-body">
+        <div class="memory-title">${m.title}</div>
+        <div class="memory-date">${formatDate(m.date)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openMemory(id){
+  const m = memories.find(x=>x.id===id);
+  if(!m) return;
+  document.getElementById('modalTitle').textContent = m.title;
+  if(m.type&&m.type.startsWith('image')){
+    document.getElementById('modalBody').innerHTML = `<img src="${m.data}" style="width:100%;border-radius:8px;margin-bottom:10px;"><div style="font-size:12px;color:var(--ink3);">${formatDate(m.date)}</div><button style="margin-top:10px;color:var(--red);background:none;border:none;cursor:pointer;font-size:12px;" onclick="deleteMemory(${id})">Delete this memory</button>`;
+  } else {
+    document.getElementById('modalBody').innerHTML = `<video src="${m.data}" controls style="width:100%;border-radius:8px;"></video><div style="font-size:12px;color:var(--ink3);margin-top:8px;">${formatDate(m.date)}</div><button style="margin-top:10px;color:var(--red);background:none;border:none;cursor:pointer;font-size:12px;" onclick="deleteMemory(${id})">Delete this memory</button>`;
+  }
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function deleteMemory(id){
+  if(!confirm('Delete this memory?')) return;
+  memories = memories.filter(m=>m.id!==id);
+  setData('ayl_memories',memories);
+  document.getElementById('modalOverlay').classList.remove('open');
+  renderMemories();
+}
+
+function closeModal(ev){
+  if(ev.target===document.getElementById('modalOverlay')) document.getElementById('modalOverlay').classList.remove('open');
+}
+
+if('Notification' in window && Notification.permission!=='granted'){
+  Notification.requestPermission();
+}
+
+renderDashboard();
+updateAlarmBadge();
+setInterval(checkReminders, 30000);
+checkReminders();
+</script>
